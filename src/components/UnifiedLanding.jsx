@@ -31,13 +31,11 @@ function UnifiedLanding({ onEnterMap }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingComplete, setTypingComplete] = useState(false);
 
-  const fullText = `Israel's destruction of Gaza and the persistent conflation of Judaism with the state of Israel have opened a deep schism within Jewish identity.
+  const fullText = `The destruction of Gaza and the persistent conflation of Judaism with the state of Israel have caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
 
-While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians and felt immense strain in their Jewish identity.
+Many Jews have begun to grapple with a fundamental question in one form or another: Must Jewish identity be centered around a political state and political power?
 
-Many Jews have begun to grapple with a fundamental question in one form or another: Must the Jewish nation—the Jewish people—rely on a political state to survive?
-
-Youth in the Diaspora (YID) offers an alternative to the dominant narrative of Jewish political power. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history.
+Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
 
 YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.`;
 
@@ -366,7 +364,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
               </h1>
 
               <p style={{
-                margin: '0 0 40px 0',
+                margin: '0',
                 fontSize: '24px',
                 fontWeight: '400',
                 color: '#4a5568',
@@ -376,41 +374,6 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
               }}>
                 An interactive map documenting 175 years of Jewish diaspora communities
               </p>
-
-              <div style={{
-                display: 'flex',
-                gap: '16px',
-                flexWrap: 'wrap'
-              }}>
-                <button
-                  onClick={onEnterMap}
-                  style={{
-                    padding: '18px 40px',
-                    fontSize: '17px',
-                    fontWeight: '700',
-                    fontFamily: "'Montserrat', sans-serif",
-                    background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease',
-                    boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 6px 20px rgba(10, 31, 68, 0.4)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.transform = 'translateY(0)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(10, 31, 68, 0.3)';
-                  }}
-                >
-                  Explore the Map
-                </button>
-              </div>
             </div>
           </section>
 
@@ -505,6 +468,51 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
                   </div>
                 </div>
               </div>
+            </div>
+          </section>
+
+          {/* Explore the Map Button */}
+          <section style={{
+            padding: '40px 0',
+            background: '#FFFFFF'
+          }}>
+            <div style={{
+              width: '95%',
+              maxWidth: '1200px',
+              margin: '0 auto',
+              paddingLeft: '60px',
+              paddingRight: '40px',
+              display: 'flex',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={onEnterMap}
+                style={{
+                  padding: '18px 40px',
+                  fontSize: '17px',
+                  fontWeight: '700',
+                  fontFamily: "'Montserrat', sans-serif",
+                  background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'translateY(-2px)';
+                  e.target.style.boxShadow = '0 6px 20px rgba(10, 31, 68, 0.4)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = '0 4px 15px rgba(10, 31, 68, 0.3)';
+                }}
+              >
+                Explore the Map
+              </button>
             </div>
           </section>
 
@@ -894,16 +902,16 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
                 fontFamily: "'Montserrat', sans-serif"
               }}>
                 <p style={{ margin: '0 0 20px 0' }}>
-                  Israel's destruction of Gaza and the persistent conflation of Judaism with the state of Israel have opened a deep schism within Jewish identity.
+                  The destruction of Gaza and the persistent conflation of Judaism with the state of Israel have caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
                 </p>
                 <p style={{ margin: '0 0 20px 0' }}>
-                  While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians and felt immense strain in their Jewish identity.
+                  Many Jews have begun to grapple with a fundamental question in one form or another: <strong style={{ color: '#0A1F44' }}>Must Jewish identity be centered around a political state and political power?</strong>
                 </p>
                 <p style={{ margin: '0 0 20px 0' }}>
-                  Many Jews have begun to grapple with a fundamental question: <strong style={{ color: '#0A1F44' }}>Must the Jewish nation—the Jewish people—rely on a political state to survive?</strong>
+                  Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
                 </p>
                 <p style={{ margin: '0' }}>
-                  YID offers an alternative to the dominant narrative of Jewish political power. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history, aiming to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.
+                  YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.
                 </p>
               </div>
             </div>
