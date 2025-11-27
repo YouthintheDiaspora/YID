@@ -91,7 +91,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
             gap: '12px'
           }}>
             <img
-              src="/logo.png"
+              src={import.meta.env.BASE_URL + 'logo.png'}
               alt="Youth in the Diaspora"
               style={{
                 height: '40px',
