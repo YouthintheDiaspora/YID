@@ -6,7 +6,6 @@ import EventInfoPanel from './components/EventInfoPanel';
 import EnhancedContributionForm from './components/EnhancedContributionForm';
 import UnifiedLanding from './components/UnifiedLanding';
 import ThematicSelector from './components/ThematicSelector';
-import { AuthProvider } from './contexts/AuthContext';
 import { citiesData, availableYears, getPopulationForYear } from './data/populationData';
 import { getEventsForYear } from './data/historicalEvents';
 import { migrationFlows } from './data/migrationFlows';
@@ -183,9 +182,8 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <div className="app">
-        {showLanding && <UnifiedLanding onEnterMap={handleEnterMap} />}
+    <div className="app">
+      {showLanding && <UnifiedLanding onEnterMap={handleEnterMap} />}
 
         {!showLanding && (
         <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
@@ -193,7 +191,7 @@ function App() {
           <div style={{
             position: 'absolute',
             top: '20px',
-            left: '20px',
+            left: '80px',
             zIndex: 1000
           }}>
             <ThematicSelector
@@ -710,8 +708,7 @@ function App() {
           </div>
         </div>
       )}
-      </div>
-    </AuthProvider>
+    </div>
   );
 }
 

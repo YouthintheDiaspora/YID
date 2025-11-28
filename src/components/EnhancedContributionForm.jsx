@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
-import { collection, addDoc, updateDoc, doc, increment } from 'firebase/firestore';
+import { collection, addDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage, isConfigured } from '../firebase/config';
-import { useAuth } from '../contexts/AuthContext';
 
 function EnhancedContributionForm({ city, onClose, onSubmit }) {
-  const { currentUser, userProfile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -13,6 +11,7 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
     type: 'story',
     title: '',
     description: '',
+    contributorName: '',
     tags: [],
     languages: ['English'],
     license: 'CC-BY'
@@ -46,15 +45,38 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length + mediaFiles.length > 5) {
-      setError('Maximum 5 images allowed');
+    if (files.length + mediaFiles.length > 10) {
+      setError('Maximum 10 files allowed');
       return;
     }
 
-    // Check file sizes
-    const oversized = files.filter((file) => file.size > 10 * 1024 * 1024);
+    // Check file sizes (25MB for documents/audio, 10MB for images)
+    const oversized = files.filter((file) => file.size > 25 * 1024 * 1024);
     if (oversized.length > 0) {
-      setError('Each image must be less than 10MB');
+      setError('Each file must be less than 25MB');
+      return;
+    }
+
+    // Check file types
+    const allowedTypes = [
+      'image/png', 'image/jpeg', 'image/jpg', 'image/tiff', 'image/tif',
+      'application/pdf',
+      'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.google-apps.document',
+      'audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg'
+    ];
+
+    const invalidFiles = files.filter((file) => {
+      const isAllowed = allowedTypes.includes(file.type) ||
+                       file.name.endsWith('.doc') ||
+                       file.name.endsWith('.docx') ||
+                       file.name.endsWith('.tif') ||
+                       file.name.endsWith('.tiff');
+      return !isAllowed;
+    });
+
+    if (invalidFiles.length > 0) {
+      setError('Only images (PNG, JPEG, TIF), documents (PDF, Word), and audio files (MP3, WAV) are allowed');
       return;
     }
 
@@ -94,18 +116,13 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isConfigured) {
-      setError('Firebase is not configured. See FIREBASE_SETUP.md to enable cloud features.');
-      return;
-    }
-
-    if (!currentUser) {
-      setError('You must be signed in to contribute');
-      return;
-    }
-
     if (!formData.title.trim() || !formData.description.trim()) {
       setError('Title and description are required');
+      return;
+    }
+
+    if (!formData.contributorName.trim()) {
+      setError('Your name is required');
       return;
     }
 
@@ -120,20 +137,20 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
     setError('');
 
     try {
-      // Upload images
-      const mediaUrls = mediaFiles.length > 0 ? await uploadImages() : [];
+      // Generate a unique ID for anonymous contributor
+      const contributorId = `anon_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      // Create contribution document
+      // Create contribution object
       const contribution = {
         cityId: city.id || city.name,
         cityName: city.name,
-        authorId: currentUser.uid,
-        authorName: userProfile?.displayName || currentUser.displayName,
+        authorId: contributorId,
+        authorName: formData.contributorName.trim(),
         type: formData.type,
         title: formData.title,
         description: formData.description,
         citations: validCitations.length > 0 ? validCitations : [{ source: 'Oral History', type: 'oral_history' }],
-        mediaUrls: mediaUrls,
+        mediaUrls: [],
         tags: formData.tags,
         languages: formData.languages,
         license: formData.license,
@@ -147,24 +164,30 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
           insightful: 0,
           thankYou: 0
         },
-        commentsCount: 0
+        commentsCount: 0,
+        timestamp: new Date().toISOString()
       };
 
-      // Add to Firestore
-      const docRef = await addDoc(collection(db, 'contributions'), contribution);
+      // Try to save to Firestore if configured, otherwise just use localStorage
+      if (isConfigured) {
+        try {
+          // Upload images if any
+          if (mediaFiles.length > 0) {
+            contribution.mediaUrls = await uploadImages();
+          }
 
-      // Update user's contribution count
-      const userRef = doc(db, 'users', currentUser.uid);
-      await updateDoc(userRef, {
-        contributionCount: increment(1)
-      });
+          const docRef = await addDoc(collection(db, 'contributions'), contribution);
+          contribution.id = docRef.id;
+        } catch (firebaseErr) {
+          console.warn('Firebase save failed, using localStorage only:', firebaseErr);
+          contribution.id = contributorId;
+        }
+      } else {
+        contribution.id = contributorId;
+      }
 
-      // Call parent onSubmit (for local state)
-      onSubmit({
-        id: docRef.id,
-        ...contribution,
-        timestamp: new Date().toISOString()
-      });
+      // Call parent onSubmit (for local state/localStorage)
+      onSubmit(contribution);
 
       onClose();
     } catch (err) {
@@ -272,6 +295,20 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
               <option value="person">Notable Person</option>
               <option value="artifact">Artifact/Document</option>
             </select>
+          </div>
+
+          {/* Contributor Name */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>Your Name *</label>
+            <input
+              type="text"
+              name="contributorName"
+              value={formData.contributorName}
+              onChange={handleChange}
+              placeholder="How should we credit you?"
+              required
+              style={inputStyle}
+            />
           </div>
 
           {/* Title */}
@@ -392,10 +429,13 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
 
           {/* Media Upload */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={labelStyle}>Images (Optional, max 5)</label>
+            <label style={labelStyle}>Attachments (Optional, max 10 files)</label>
+            <p style={{ fontSize: '12px', color: '#4a5568', margin: '0 0 12px 0' }}>
+              Upload images, documents (PDF, Word), or audio files (MP3, WAV). Max 25MB per file.
+            </p>
             <input
               type="file"
-              accept="image/*"
+              accept="image/png,image/jpeg,image/jpg,image/tiff,.tif,.tiff,application/pdf,.pdf,application/msword,.doc,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,audio/mpeg,audio/mp3,audio/wav,.mp3,.wav"
               multiple
               onChange={handleFileChange}
               style={{ display: 'none' }}
@@ -415,55 +455,74 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
                 fontWeight: '500'
               }}
             >
-              📷 Choose Images
+              📎 Choose Files
             </label>
 
             {mediaFiles.length > 0 && (
               <div style={{ marginTop: '12px', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {mediaFiles.map((file, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: 'relative',
-                      width: '80px',
-                      height: '80px',
-                      borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
-                      background: '#F7FAFC',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      padding: '4px'
-                    }}
-                  >
-                    <span style={{ fontSize: '10px', textAlign: 'center', wordBreak: 'break-all' }}>
-                      {file.name.substring(0, 15)}...
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => removeFile(index)}
+                {mediaFiles.map((file, index) => {
+                  // Determine file icon based on type
+                  let fileIcon = '📄';
+                  if (file.type.startsWith('image/')) fileIcon = '🖼️';
+                  else if (file.type.startsWith('audio/')) fileIcon = '🎵';
+                  else if (file.type === 'application/pdf') fileIcon = '📕';
+                  else if (file.type.includes('word') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) fileIcon = '📝';
+
+                  return (
+                    <div
+                      key={index}
                       style={{
-                        position: 'absolute',
-                        top: '-6px',
-                        right: '-6px',
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        background: '#DC2626',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '12px',
+                        position: 'relative',
+                        minWidth: '100px',
+                        maxWidth: '140px',
+                        borderRadius: '8px',
+                        border: '1px solid #E2E8F0',
+                        background: '#F7FAFC',
+                        padding: '8px',
                         display: 'flex',
+                        flexDirection: 'column',
                         alignItems: 'center',
-                        justifyContent: 'center'
+                        gap: '4px'
                       }}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                      <div style={{ fontSize: '24px' }}>{fileIcon}</div>
+                      <span style={{
+                        fontSize: '10px',
+                        textAlign: 'center',
+                        wordBreak: 'break-word',
+                        color: '#4a5568',
+                        lineHeight: '1.2'
+                      }}>
+                        {file.name.length > 20 ? file.name.substring(0, 17) + '...' : file.name}
+                      </span>
+                      <span style={{ fontSize: '9px', color: '#8a99a8' }}>
+                        {(file.size / 1024 / 1024).toFixed(1)} MB
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        style={{
+                          position: 'absolute',
+                          top: '-6px',
+                          right: '-6px',
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: '#DC2626',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -549,7 +608,7 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
           <div style={{ display: 'flex', gap: '12px' }}>
             <button
               type="submit"
-              disabled={loading || !currentUser}
+              disabled={loading}
               style={{
                 flex: 1,
                 padding: '14px',
@@ -559,8 +618,8 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
                 borderRadius: '8px',
                 fontSize: '14px',
                 fontWeight: '600',
-                cursor: loading || !currentUser ? 'not-allowed' : 'pointer',
-                opacity: loading || !currentUser ? 0.6 : 1
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1
               }}
             >
               {loading ? 'Submitting...' : 'Submit Contribution'}
@@ -584,12 +643,6 @@ function EnhancedContributionForm({ city, onClose, onSubmit }) {
               Cancel
             </button>
           </div>
-
-          {!currentUser && (
-            <p style={{ marginTop: '12px', fontSize: '13px', color: '#DC2626', textAlign: 'center' }}>
-              You must be signed in to submit contributions
-            </p>
-          )}
         </form>
       </div>
     </div>

@@ -1,35 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import HistoricalImageScroll from './HistoricalImageScroll';
-import { useAuth } from '../contexts/AuthContext';
-import { isConfigured } from '../firebase/config';
-import AuthModal from './AuthModal';
-import UserProfile from './UserProfile';
 
 function UnifiedLanding({ onEnterMap }) {
-  const { currentUser, userProfile, logout } = useAuth();
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-
-  const handleSignInClick = () => {
-    if (!isConfigured) {
-      alert('⚠️ Firebase is not configured yet!\n\nTo enable authentication:\n1. See FIREBASE_SETUP.md\n2. Create a Firebase project\n3. Add your config to src/firebase/config.js\n\nFor now, you can see the UI but authentication won\'t work.');
-      return;
-    }
-    setShowAuthModal(true);
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      setShowUserMenu(false);
-    } catch (error) {
-      console.error('Failed to log out:', error);
-    }
-  };
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [typingComplete, setTypingComplete] = useState(false);
+  const [activePage, setActivePage] = useState('home'); // 'home', 'why-us', 'contact', 'sources', 'exhibit'
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [focusedPainting, setFocusedPainting] = useState(null);
+
+  // Handle hash changes for exhibit link
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#exhibit') {
+        setActivePage('exhibit');
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fullText = `The destruction of Gaza and the persistent conflation of Judaism with the state of Israel have caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
 
@@ -44,7 +42,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
       const timeout = setTimeout(() => {
         setDisplayedText(prev => prev + fullText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
-      }, 15);
+      }, 25);
       return () => clearTimeout(timeout);
     } else {
       setTypingComplete(true);
@@ -70,34 +68,38 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
         background: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
         zIndex: 100,
-        padding: '20px 0'
+        padding: isMobile ? '12px 0' : '20px 0'
       }}>
         <div style={{
           width: '95%',
           maxWidth: '1200px',
           margin: '0 auto',
-          paddingLeft: '60px',
-          paddingRight: '40px',
+          paddingLeft: isMobile ? '16px' : '60px',
+          paddingRight: isMobile ? '16px' : '40px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          flexWrap: isMobile ? 'wrap' : 'nowrap'
         }}>
           {/* Logo */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px'
+            gap: isMobile ? '8px' : '12px',
+            marginBottom: isMobile ? '12px' : '0',
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'center' : 'flex-start'
           }}>
             <img
               src={import.meta.env.BASE_URL + 'logo.png'}
               alt="Youth in the Diaspora"
               style={{
-                height: '40px',
+                height: isMobile ? '28px' : '40px',
                 width: 'auto'
               }}
             />
             <span style={{
-              fontSize: '20px',
+              fontSize: isMobile ? '16px' : '20px',
               fontWeight: '700',
               fontFamily: "'Playfair Display', serif",
               color: '#0A1F44',
@@ -110,200 +112,96 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
           {/* Navigation Links */}
           <div style={{
             display: 'flex',
-            gap: '32px',
-            alignItems: 'center'
+            gap: isMobile ? '16px' : '32px',
+            alignItems: 'center',
+            width: isMobile ? '100%' : 'auto',
+            justifyContent: isMobile ? 'space-around' : 'flex-end'
           }}>
-            <a
-              href="#why-us"
+            <button
+              onClick={() => setActivePage('home')}
               style={{
-                fontSize: '16px',
+                fontSize: isMobile ? '13px' : '16px',
                 fontWeight: '500',
                 fontFamily: "'Montserrat', sans-serif",
-                color: '#4a5568',
+                color: activePage === 'home' ? '#0A1F44' : '#4a5568',
                 textDecoration: 'none',
-                transition: 'color 0.2s ease'
+                transition: 'color 0.2s ease',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: isMobile ? '8px 4px' : '0',
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto'
               }}
               onMouseOver={(e) => e.target.style.color = '#0A1F44'}
-              onMouseOut={(e) => e.target.style.color = '#4a5568'}
+              onMouseOut={(e) => e.target.style.color = activePage === 'home' ? '#0A1F44' : '#4a5568'}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => setActivePage('why-us')}
+              style={{
+                fontSize: isMobile ? '13px' : '16px',
+                fontWeight: '500',
+                fontFamily: "'Montserrat', sans-serif",
+                color: activePage === 'why-us' ? '#0A1F44' : '#4a5568',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: isMobile ? '8px 4px' : '0',
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto'
+              }}
+              onMouseOver={(e) => e.target.style.color = '#0A1F44'}
+              onMouseOut={(e) => e.target.style.color = activePage === 'why-us' ? '#0A1F44' : '#4a5568'}
             >
               Why Us
-            </a>
-            <a
-              href="#contact"
+            </button>
+            <button
+              onClick={() => setActivePage('contact')}
               style={{
-                fontSize: '16px',
+                fontSize: isMobile ? '13px' : '16px',
                 fontWeight: '500',
                 fontFamily: "'Montserrat', sans-serif",
-                color: '#4a5568',
+                color: activePage === 'contact' ? '#0A1F44' : '#4a5568',
                 textDecoration: 'none',
-                transition: 'color 0.2s ease'
+                transition: 'color 0.2s ease',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: isMobile ? '8px 4px' : '0',
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto',
+                whiteSpace: 'nowrap'
               }}
               onMouseOver={(e) => e.target.style.color = '#0A1F44'}
-              onMouseOut={(e) => e.target.style.color = '#4a5568'}
+              onMouseOut={(e) => e.target.style.color = activePage === 'contact' ? '#0A1F44' : '#4a5568'}
             >
-              Contact Us
-            </a>
-            <a
-              href="#sources"
+              Contact{isMobile ? '' : ' Us'}
+            </button>
+            <button
+              onClick={() => setActivePage('sources')}
               style={{
-                fontSize: '16px',
+                fontSize: isMobile ? '13px' : '16px',
                 fontWeight: '500',
                 fontFamily: "'Montserrat', sans-serif",
-                color: '#4a5568',
+                color: activePage === 'sources' ? '#0A1F44' : '#4a5568',
                 textDecoration: 'none',
-                transition: 'color 0.2s ease'
+                transition: 'color 0.2s ease',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: isMobile ? '8px 4px' : '0',
+                minWidth: isMobile ? '44px' : 'auto',
+                minHeight: isMobile ? '44px' : 'auto'
               }}
               onMouseOver={(e) => e.target.style.color = '#0A1F44'}
-              onMouseOut={(e) => e.target.style.color = '#4a5568'}
+              onMouseOut={(e) => e.target.style.color = activePage === 'sources' ? '#0A1F44' : '#4a5568'}
             >
               Sources
-            </a>
-
-            {/* Authentication UI */}
-            {!currentUser ? (
-              /* Not logged in - Show Sign In button */
-              <button
-                onClick={handleSignInClick}
-                style={{
-                  padding: '10px 24px',
-                  background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  boxShadow: '0 2px 8px rgba(10, 31, 68, 0.2)',
-                  fontFamily: "'Montserrat', sans-serif",
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(10, 31, 68, 0.3)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(10, 31, 68, 0.2)';
-                }}
-              >
-                Sign In
-              </button>
-            ) : (
-              /* Logged in - Show user menu */
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  style={{
-                    padding: '6px 12px',
-                    background: '#FFFFFF',
-                    border: '1px solid #E2E8F0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(10, 31, 68, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontFamily: "'Montserrat', sans-serif"
-                  }}
-                >
-                  <div
-                    style={{
-                      width: '28px',
-                      height: '28px',
-                      borderRadius: '50%',
-                      background: '#0A1F44',
-                      color: '#FFFFFF',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '13px',
-                      fontWeight: '700',
-                      fontFamily: "'Playfair Display', serif"
-                    }}
-                  >
-                    {userProfile?.displayName?.charAt(0).toUpperCase() || 'U'}
-                  </div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#0A1F44' }}>
-                    {userProfile?.displayName || 'User'}
-                  </span>
-                  <span style={{ fontSize: '10px', color: '#4a5568' }}>▼</span>
-                </button>
-
-                {/* Dropdown Menu */}
-                {showUserMenu && (
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '8px',
-                      background: '#FFFFFF',
-                      border: '1px solid #E2E8F0',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 20px rgba(10, 31, 68, 0.15)',
-                      minWidth: '180px',
-                      overflow: 'hidden',
-                      zIndex: 100
-                    }}
-                  >
-                    <button
-                      onClick={() => {
-                        setShowProfileModal(true);
-                        setShowUserMenu(false);
-                      }}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#0A1F44',
-                        cursor: 'pointer',
-                        fontFamily: "'Montserrat', sans-serif",
-                        transition: 'background 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#F7FAFC';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      View Profile
-                    </button>
-
-                    <div style={{ height: '1px', background: '#E2E8F0', margin: '4px 0' }} />
-
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        width: '100%',
-                        padding: '12px 16px',
-                        background: 'transparent',
-                        border: 'none',
-                        textAlign: 'left',
-                        fontSize: '14px',
-                        fontWeight: '500',
-                        color: '#DC2626',
-                        cursor: 'pointer',
-                        fontFamily: "'Montserrat', sans-serif",
-                        transition: 'background 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = '#FEE2E2';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            </button>
           </div>
         </div>
       </nav>
@@ -315,7 +213,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '60px 40px'
+          padding: isMobile ? '40px 20px' : '60px 40px'
         }}>
           <div style={{
             width: '95%',
@@ -323,7 +221,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
           }}>
             <pre style={{
               fontFamily: "'Montserrat', sans-serif",
-              fontSize: '18px',
+              fontSize: isMobile ? '15px' : '18px',
               lineHeight: '1.8',
               color: '#1a1a1a',
               whiteSpace: 'pre-wrap',
@@ -337,23 +235,23 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
       )}
 
       {/* Main Landing Content */}
-      {typingComplete && (
+      {typingComplete && activePage === 'home' && (
         <div>
           {/* Hero Section */}
           <section style={{
-            padding: '120px 0 80px',
+            padding: isMobile ? '40px 0 20px' : '120px 0 30px',
             background: '#FFFFFF'
           }}>
             <div style={{
               width: '95%',
               maxWidth: '1200px',
               margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px'
+              paddingLeft: isMobile ? '20px' : '60px',
+              paddingRight: isMobile ? '20px' : '40px'
             }}>
               <h1 style={{
                 margin: '0 0 24px 0',
-                fontSize: '48px',
+                fontSize: isMobile ? '28px' : '48px',
                 fontWeight: '700',
                 fontFamily: "'Playfair Display', serif",
                 color: '#0A1F44',
@@ -365,7 +263,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
 
               <p style={{
                 margin: '0',
-                fontSize: '24px',
+                fontSize: isMobile ? '16px' : '24px',
                 fontWeight: '400',
                 color: '#4a5568',
                 fontFamily: "'Montserrat', sans-serif",
@@ -377,119 +275,33 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
             </div>
           </section>
 
-          {/* Banner Image */}
+          {/* Rotating Artwork Gallery */}
           <section style={{
-            padding: '40px 0',
+            padding: '0',
             background: '#FFFFFF'
           }}>
-            <div style={{
-              width: '95%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px'
-            }}>
-              {/* Image */}
-              <img
-                src={import.meta.env.BASE_URL + 'banner-image.png'}
-                alt="Watchmen Over Jerusalem Isaiah LXII"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  borderRadius: '12px 12px 0 0',
-                  boxShadow: '0 4px 20px rgba(10, 31, 68, 0.15)',
-                  display: 'block'
-                }}
-              />
-
-              {/* Attribution Box */}
-              <div style={{
-                background: '#FAFBFC',
-                borderRadius: '0 0 12px 12px',
-                padding: '16px 24px',
-                borderTop: '1px solid #E2E8F0',
-                boxShadow: '0 2px 8px rgba(10, 31, 68, 0.08)'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '12px'
-                }}>
-                  {/* Left: Title and Location */}
-                  <div>
-                    <h3 style={{
-                      margin: '0 0 4px 0',
-                      fontSize: '15px',
-                      fontWeight: '500',
-                      fontFamily: "'Playfair Display', serif",
-                      color: '#5a6a7a',
-                      lineHeight: '1.3'
-                    }}>
-                      Watchmen Over Jerusalem Isaiah LXII
-                    </h3>
-                    <p style={{
-                      margin: '0',
-                      fontSize: '12px',
-                      fontWeight: '400',
-                      fontFamily: "'Montserrat', sans-serif",
-                      color: '#8a99a8'
-                    }}>
-                      Made in Boston, USA
-                    </p>
-                  </div>
-
-                  {/* Right: Artist Name */}
-                  <div style={{
-                    textAlign: 'right'
-                  }}>
-                    <div style={{
-                      fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
-                      fontSize: '20px',
-                      fontWeight: '400',
-                      color: '#5a6a7a',
-                      marginBottom: '2px',
-                      lineHeight: '1'
-                    }}>
-                      Zayda
-                    </div>
-                    <div style={{
-                      fontFamily: "'Montserrat', sans-serif",
-                      fontSize: '11px',
-                      fontWeight: '400',
-                      color: '#8a99a8',
-                      lineHeight: '1.4'
-                    }}>
-                      Solomon S Richmond
-                      <br />
-                      (digital adaptation)
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HistoricalImageScroll />
           </section>
 
           {/* Explore the Map Button */}
           <section style={{
-            padding: '40px 0',
+            padding: isMobile ? '30px 0' : '40px 0',
             background: '#FFFFFF'
           }}>
             <div style={{
               width: '95%',
               maxWidth: '1200px',
               margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px',
+              paddingLeft: isMobile ? '20px' : '60px',
+              paddingRight: isMobile ? '20px' : '40px',
               display: 'flex',
               justifyContent: 'center'
             }}>
               <button
                 onClick={onEnterMap}
                 style={{
-                  padding: '18px 40px',
-                  fontSize: '17px',
+                  padding: isMobile ? '16px 32px' : '18px 40px',
+                  fontSize: isMobile ? '15px' : '17px',
                   fontWeight: '700',
                   fontFamily: "'Montserrat', sans-serif",
                   background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
@@ -500,7 +312,10 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
                   transition: 'all 0.3s ease',
                   boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
                   textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  letterSpacing: '0.5px',
+                  minHeight: '48px',
+                  width: isMobile ? '100%' : 'auto',
+                  maxWidth: isMobile ? '320px' : 'none'
                 }}
                 onMouseOver={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
@@ -515,9 +330,6 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
               </button>
             </div>
           </section>
-
-          {/* Historical Image Scroll */}
-          <HistoricalImageScroll />
 
           {/* What This Map Shows */}
           <section style={{
@@ -872,177 +684,49 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
             </div>
           </section>
 
-          {/* Why Us */}
-          <section id="why-us" style={{
-            padding: '80px 0',
-            background: '#FFFFFF'
+        </div>
+      )}
+
+      {/* Why Us Page */}
+      {typingComplete && activePage === 'why-us' && (
+        <div style={{ minHeight: '80vh', padding: '80px 0', background: '#FFFFFF' }}>
+          <div style={{
+            width: '95%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            paddingLeft: '60px',
+            paddingRight: '40px'
           }}>
-            <div style={{
-              width: '95%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px'
+            <h2 style={{
+              margin: '0 0 40px 0',
+              fontSize: '36px',
+              fontWeight: '700',
+              fontFamily: "'Playfair Display', serif",
+              color: '#0A1F44',
+              lineHeight: '1.3'
             }}>
-              <h2 style={{
-                margin: '0 0 40px 0',
-                fontSize: '32px',
-                fontWeight: '700',
-                fontFamily: "'Playfair Display', serif",
-                color: '#0A1F44',
-                lineHeight: '1.3'
-              }}>
-                Why Youth in the Diaspora?
-              </h2>
+              Why Youth in the Diaspora?
+            </h2>
 
-              <div style={{
-                fontSize: '18px',
-                lineHeight: '1.8',
-                color: '#4a5568',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                <p style={{ margin: '0 0 20px 0' }}>
-                  The destruction of Gaza and the persistent conflation of Judaism with the state of Israel have caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
-                </p>
-                <p style={{ margin: '0 0 20px 0' }}>
-                  Many Jews have begun to grapple with a fundamental question in one form or another: <strong style={{ color: '#0A1F44' }}>Must Jewish identity be centered around a political state and political power?</strong>
-                </p>
-                <p style={{ margin: '0 0 20px 0' }}>
-                  Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
-                </p>
-                <p style={{ margin: '0' }}>
-                  YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Sources */}
-          <section id="sources" style={{
-            padding: '80px 0',
-            background: '#F7FAFC',
-            borderTop: '1px solid #E2E8F0'
-          }}>
             <div style={{
-              width: '95%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px'
+              fontSize: '18px',
+              lineHeight: '1.8',
+              color: '#4a5568',
+              fontFamily: "'Montserrat', sans-serif"
             }}>
-              <h2 style={{
-                margin: '0 0 40px 0',
-                fontSize: '32px',
-                fontWeight: '700',
-                fontFamily: "'Playfair Display', serif",
-                color: '#0A1F44',
-                lineHeight: '1.3'
-              }}>
-                Sources
-              </h2>
-
-              <div style={{
-                fontSize: '16px',
-                lineHeight: '1.8',
-                color: '#4a5568',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                <p style={{ margin: '0 0 16px 0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Population Data:</strong> American Jewish Year Book, Jewish Virtual Library, local Jewish community organizations
-                </p>
-                <p style={{ margin: '0 0 16px 0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Historical Events:</strong> United States Holocaust Memorial Museum, Yad Vashem, historical archives
-                </p>
-                <p style={{ margin: '0 0 16px 0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Migration Data:</strong> HIAS, Jewish refugee organization records, immigration archives
-                </p>
-                <p style={{ margin: '0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Cultural Information:</strong> Community contributions, historical societies, academic research
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Contact Us */}
-          <section id="contact" style={{
-            padding: '80px 0',
-            background: '#FFFFFF'
-          }}>
-            <div style={{
-              width: '95%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px'
-            }}>
-              <h2 style={{
-                margin: '0 0 24px 0',
-                fontSize: '32px',
-                fontWeight: '700',
-                fontFamily: "'Playfair Display', serif",
-                color: '#0A1F44',
-                lineHeight: '1.3'
-              }}>
-                Contact Us
-              </h2>
-
-              <p style={{
-                margin: '0 0 32px 0',
-                fontSize: '18px',
-                lineHeight: '1.8',
-                color: '#4a5568',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                Have questions, suggestions, or stories to share? We'd love to hear from you.
+              <p style={{ margin: '0 0 20px 0' }}>
+                The destruction of Gaza and the persistent conflation of Judaism with the state of Israel have caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
+              </p>
+              <p style={{ margin: '0 0 20px 0' }}>
+                Many Jews have begun to grapple with a fundamental question in one form or another: <strong style={{ color: '#0A1F44' }}>Must Jewish identity be centered around a political state and political power?</strong>
+              </p>
+              <p style={{ margin: '0 0 20px 0' }}>
+                Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
+              </p>
+              <p style={{ margin: '0 0 40px 0' }}>
+                YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.
               </p>
 
-              <div style={{
-                fontSize: '16px',
-                lineHeight: '1.8',
-                color: '#4a5568',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                <p style={{ margin: '0 0 12px 0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Email:</strong> contact@youthinthediaspora.org
-                </p>
-                <p style={{ margin: '0' }}>
-                  <strong style={{ color: '#0A1F44' }}>Contribute:</strong> Use the "Add Pin" feature on the map to share your community's story
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Final CTA */}
-          <section style={{
-            padding: '80px 0',
-            background: '#FFFFFF'
-          }}>
-            <div style={{
-              width: '95%',
-              maxWidth: '1200px',
-              margin: '0 auto',
-              paddingLeft: '60px',
-              paddingRight: '40px',
-              textAlign: 'center'
-            }}>
-              <h2 style={{
-                margin: '0 0 24px 0',
-                fontSize: '36px',
-                fontWeight: '700',
-                fontFamily: "'Playfair Display', serif",
-                color: '#0A1F44',
-                lineHeight: '1.3'
-              }}>
-                Ready to explore?
-              </h2>
-              <p style={{
-                margin: '0 0 32px 0',
-                fontSize: '18px',
-                color: '#4a5568',
-                fontFamily: "'Montserrat', sans-serif"
-              }}>
-                Discover centuries of Jewish diaspora history
-              </p>
               <button
                 onClick={onEnterMap}
                 style={{
@@ -1072,13 +756,414 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
                 Explore the Map
               </button>
             </div>
-          </section>
+          </div>
         </div>
       )}
 
-      {/* Modals */}
-      {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-      {showProfileModal && <UserProfile onClose={() => setShowProfileModal(false)} />}
+      {/* Contact Page */}
+      {typingComplete && activePage === 'contact' && (
+        <div style={{ minHeight: '80vh', padding: '80px 0', background: '#FFFFFF' }}>
+          <div style={{
+            width: '95%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            paddingLeft: '60px',
+            paddingRight: '40px'
+          }}>
+            <h2 style={{
+              margin: '0 0 24px 0',
+              fontSize: '36px',
+              fontWeight: '700',
+              fontFamily: "'Playfair Display', serif",
+              color: '#0A1F44',
+              lineHeight: '1.3'
+            }}>
+              Contact Us
+            </h2>
+
+            <p style={{
+              margin: '0 0 40px 0',
+              fontSize: '18px',
+              lineHeight: '1.8',
+              color: '#4a5568',
+              fontFamily: "'Montserrat', sans-serif"
+            }}>
+              Have questions, suggestions, or want to collaborate? We'd love to hear from you. Reach out for inquiries about partnerships, contributions, or general questions about the project.
+            </p>
+
+            <div style={{
+              fontSize: '18px',
+              lineHeight: '1.8',
+              color: '#4a5568',
+              fontFamily: "'Montserrat', sans-serif",
+              marginBottom: '40px'
+            }}>
+              <p style={{ margin: '0 0 16px 0' }}>
+                <strong style={{ color: '#0A1F44' }}>Email:</strong>{' '}
+                <a href="mailto:connect.youthinthediaspora@gmail.com" style={{ color: '#0A1F44', textDecoration: 'underline' }}>
+                  connect.youthinthediaspora@gmail.com
+                </a>
+              </p>
+              <p style={{ margin: '0' }}>
+                <strong style={{ color: '#0A1F44' }}>Contribute:</strong> Use the "Add Pin" feature on the map to share your community's story
+              </p>
+            </div>
+
+            <button
+              onClick={onEnterMap}
+              style={{
+                padding: '18px 40px',
+                fontSize: '17px',
+                fontWeight: '700',
+                fontFamily: "'Montserrat', sans-serif",
+                background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(10, 31, 68, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(10, 31, 68, 0.3)';
+              }}
+            >
+              Explore the Map
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Sources Page */}
+      {typingComplete && activePage === 'sources' && (
+        <div style={{ minHeight: '80vh', padding: '80px 0', background: '#FFFFFF' }}>
+          <div style={{
+            width: '95%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            paddingLeft: '60px',
+            paddingRight: '40px'
+          }}>
+            <h2 style={{
+              margin: '0 0 40px 0',
+              fontSize: '36px',
+              fontWeight: '700',
+              fontFamily: "'Playfair Display', serif",
+              color: '#0A1F44',
+              lineHeight: '1.3'
+            }}>
+              Sources
+            </h2>
+
+            <div style={{
+              fontSize: '18px',
+              lineHeight: '1.8',
+              color: '#4a5568',
+              fontFamily: "'Montserrat', sans-serif",
+              marginBottom: '40px'
+            }}>
+              <p style={{ margin: '0 0 20px 0' }}>
+                <strong style={{ color: '#0A1F44' }}>Population Data:</strong> American Jewish Year Book, Jewish Virtual Library, local Jewish community organizations
+              </p>
+              <p style={{ margin: '0 0 20px 0' }}>
+                <strong style={{ color: '#0A1F44' }}>Historical Events:</strong> United States Holocaust Memorial Museum, Yad Vashem, historical archives
+              </p>
+              <p style={{ margin: '0 0 20px 0' }}>
+                <strong style={{ color: '#0A1F44' }}>Migration Data:</strong> HIAS, Jewish refugee organization records, immigration archives
+              </p>
+              <p style={{ margin: '0' }}>
+                <strong style={{ color: '#0A1F44' }}>Cultural Information:</strong> Community contributions, historical societies, academic research
+              </p>
+            </div>
+
+            <button
+              onClick={onEnterMap}
+              style={{
+                padding: '18px 40px',
+                fontSize: '17px',
+                fontWeight: '700',
+                fontFamily: "'Montserrat', sans-serif",
+                background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
+                color: '#FFFFFF',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 6px 20px rgba(10, 31, 68, 0.4)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 4px 15px rgba(10, 31, 68, 0.3)';
+              }}
+            >
+              Explore the Map
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Exhibit Page */}
+      {typingComplete && activePage === 'exhibit' && (
+        <div style={{ minHeight: '80vh', padding: isMobile ? '40px 0' : '80px 0', background: '#FFFFFF' }}>
+          <div style={{
+            width: '95%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            paddingLeft: isMobile ? '20px' : '60px',
+            paddingRight: isMobile ? '20px' : '40px'
+          }}>
+            <div style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
+              <h2 style={{
+                margin: '0',
+                fontSize: isMobile ? '28px' : '36px',
+                fontWeight: '700',
+                fontFamily: "'Playfair Display', serif",
+                color: '#0A1F44',
+                lineHeight: '1.3'
+              }}>
+                Art Exhibit
+              </h2>
+              <button
+                onClick={() => { setActivePage('home'); window.location.hash = ''; }}
+                style={{
+                  padding: '10px 20px',
+                  background: '#FFFFFF',
+                  color: '#0A1F44',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  fontFamily: "'Montserrat', sans-serif"
+                }}
+              >
+                ← Back to Home
+              </button>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(4, 1fr)',
+              gap: isMobile ? '20px' : '30px'
+            }}>
+              {[
+                { src: 'Menorah.png', title: null },
+                { src: 'Mordechai.png', title: null },
+                { src: 'Esther.png', title: null },
+                { src: 'Watchmen.png', title: 'Watchmen Over Jerusalem Isaiah LXII' },
+                { src: 'SimpleMenorah.png', title: null },
+                { src: 'Einstein.png', title: null },
+                { src: 'Painting1.png', title: null },
+                { src: 'Painting3.png', title: null },
+                { src: 'Painting4.png', title: null },
+                { src: 'Painting5.png', title: null },
+                { src: 'Painting6.png', title: null },
+                { src: 'Painting7.png', title: null },
+                { src: 'Painting8.png', title: null },
+                { src: 'Painting9.png', title: null },
+                { src: 'Painting10.png', title: null },
+                { src: 'Painting11.png', title: null }
+              ].map((image, index) => (
+                <div
+                  key={index}
+                  style={{
+                    width: '100%',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease',
+                  }}
+                  onClick={() => setFocusedPainting(image)}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  <img
+                    src={`${import.meta.env.BASE_URL}historical/${image.src}`}
+                    alt="Jewish diaspora artwork"
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      borderRadius: '12px 12px 0 0',
+                      display: 'block'
+                    }}
+                  />
+                  <div style={{
+                    background: '#FAFBFC',
+                    borderRadius: '0 0 12px 12px',
+                    padding: isMobile ? '10px' : '16px',
+                    borderTop: '1px solid #E2E8F0',
+                    boxShadow: '0 2px 8px rgba(10, 31, 68, 0.08)'
+                  }}>
+                    {image.title && (
+                      <h3 style={{
+                        margin: '0 0 6px 0',
+                        fontSize: isMobile ? '11px' : '14px',
+                        fontWeight: '500',
+                        fontFamily: "'Playfair Display', serif",
+                        color: '#5a6a7a'
+                      }}>
+                        {image.title}
+                      </h3>
+                    )}
+                    <p style={{
+                      margin: '0 0 4px 0',
+                      fontSize: isMobile ? '9px' : '11px',
+                      color: '#8a99a8',
+                      fontFamily: "'Montserrat', sans-serif"
+                    }}>
+                      Made in Boston, USA
+                    </p>
+                    <div style={{
+                      fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                      fontSize: isMobile ? '13px' : '16px',
+                      color: '#5a6a7a',
+                      marginTop: '6px'
+                    }}>
+                      Zayda
+                    </div>
+                    <div style={{
+                      fontSize: isMobile ? '8px' : '10px',
+                      color: '#8a99a8',
+                      fontFamily: "'Montserrat', sans-serif"
+                    }}>
+                      Solomon S Richmond (digital adaptation)
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal/Lightbox for focused painting */}
+      {focusedPainting && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+            padding: isMobile ? '20px' : '40px',
+            cursor: 'pointer'
+          }}
+          onClick={() => setFocusedPainting(null)}
+        >
+          <div
+            style={{
+              maxWidth: '1200px',
+              maxHeight: '90vh',
+              width: '100%',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setFocusedPainting(null)}
+              style={{
+                position: 'absolute',
+                top: isMobile ? '-35px' : '-45px',
+                right: '0',
+                background: 'transparent',
+                border: 'none',
+                color: '#FFFFFF',
+                fontSize: isMobile ? '28px' : '36px',
+                cursor: 'pointer',
+                fontWeight: '300',
+                padding: '0',
+                lineHeight: '1',
+                zIndex: 10001
+              }}
+            >
+              ×
+            </button>
+
+            {/* Painting image */}
+            <img
+              src={`${import.meta.env.BASE_URL}historical/${focusedPainting.src}`}
+              alt="Jewish diaspora artwork"
+              style={{
+                width: '100%',
+                height: 'auto',
+                maxHeight: '70vh',
+                objectFit: 'contain',
+                borderRadius: '12px 12px 0 0',
+                display: 'block'
+              }}
+            />
+
+            {/* Caption box */}
+            <div style={{
+              background: '#FAFBFC',
+              borderRadius: '0 0 12px 12px',
+              padding: isMobile ? '16px' : '24px 32px',
+              borderTop: '1px solid #E2E8F0',
+              boxShadow: '0 4px 16px rgba(10, 31, 68, 0.2)'
+            }}>
+              {focusedPainting.title && (
+                <h3 style={{
+                  margin: '0 0 12px 0',
+                  fontSize: isMobile ? '16px' : '20px',
+                  fontWeight: '500',
+                  fontFamily: "'Playfair Display', serif",
+                  color: '#5a6a7a',
+                  lineHeight: '1.3'
+                }}>
+                  {focusedPainting.title}
+                </h3>
+              )}
+              <p style={{
+                margin: '0 0 8px 0',
+                fontSize: isMobile ? '13px' : '15px',
+                color: '#8a99a8',
+                fontFamily: "'Montserrat', sans-serif"
+              }}>
+                Made in Boston, USA
+              </p>
+              <div style={{
+                fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                fontSize: isMobile ? '20px' : '24px',
+                color: '#5a6a7a',
+                marginTop: '12px',
+                marginBottom: '4px'
+              }}>
+                Zayda
+              </div>
+              <div style={{
+                fontSize: isMobile ? '12px' : '13px',
+                color: '#8a99a8',
+                fontFamily: "'Montserrat', sans-serif"
+              }}>
+                Solomon S Richmond
+                <br />
+                (digital adaptation)
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
