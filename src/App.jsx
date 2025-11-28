@@ -28,6 +28,8 @@ function App() {
   const [activeTopic, setActiveTopic] = useState(null);
   const [highlightedCities, setHighlightedCities] = useState([]);
   const [activeMigrations, setActiveMigrations] = useState([]);
+  const [zaydaMode, setZaydaMode] = useState(false);
+  const [zaydaCities, setZaydaCities] = useState([]);
 
   // Load contributions and pins from localStorage on mount
   useEffect(() => {
@@ -126,8 +128,92 @@ function App() {
 
   const activeEvents = getEventsForYear(selectedYear);
 
-  const handleEnterMap = () => {
-    setShowLanding(false);
+  console.log('App render - showLanding:', showLanding, 'zaydaMode:', zaydaMode, 'zaydaCities:', zaydaCities.length);
+
+  const handleEnterMap = (options = {}) => {
+    console.log('handleEnterMap called with options:', options);
+
+    // Handle Zayda's migration journey
+    if (options.showOnlyZayda) {
+      // Create custom city markers for Zayda's journey
+      const journeyCities = [
+        {
+          id: 'zviahel-ukraine',
+          name: 'Zviahel, Ukraine',
+          coordinates: [50.2547, 27.7528],
+          country: 'Ukraine',
+          populationData: { 1912: 5000 }
+        },
+        {
+          id: 'warsaw-poland',
+          name: 'Warsaw, Poland',
+          coordinates: [52.2297, 21.0122],
+          country: 'Poland',
+          populationData: { 1912: 10000 }
+        },
+        {
+          id: 'malden-massachusetts',
+          name: 'Malden, Massachusetts',
+          coordinates: [42.4252, -71.0720],
+          country: 'United States',
+          populationData: { 1912: 3000 }
+        }
+      ];
+
+      // Create Zayda's migration route with stop in Poland
+      const zaydaMigration = [
+        {
+          id: 'zayda-journey-1',
+          name: "Zayda Solomon's Journey - Ukraine to Poland",
+          from: {
+            lat: 50.2547,
+            lon: 27.7528,
+            name: 'Zviahel, Ukraine'
+          },
+          to: {
+            lat: 52.2297,
+            lon: 21.0122,
+            name: 'Warsaw, Poland'
+          },
+          startYear: 1912,
+          endYear: 1912,
+          volume: 'small',
+          description: 'Hidden in a donkey cart under blankets with his sister Betty and mother, escaping Ukraine.'
+        },
+        {
+          id: 'zayda-journey-2',
+          name: "Zayda Solomon's Journey - Poland to America",
+          from: {
+            lat: 52.2297,
+            lon: 21.0122,
+            name: 'Warsaw, Poland'
+          },
+          to: {
+            lat: 42.4252,
+            lon: -71.0720,
+            name: 'Malden, Massachusetts'
+          },
+          startYear: 1912,
+          endYear: 1912,
+          volume: 'small',
+          description: 'Journey across the Atlantic to join family in America.'
+        }
+      ];
+
+      console.log('Setting Zayda mode with cities:', journeyCities);
+      console.log('Setting migrations:', zaydaMigration);
+
+      // Set all state and immediately hide landing
+      setZaydaCities(journeyCities);
+      setZaydaMode(true);
+      setSelectedYear(1912);
+      setShowMigrations(true);
+      setActiveMigrations(zaydaMigration);
+      setHighlightedCities([]);
+      setShowLanding(false);
+    } else {
+      setShowLanding(false);
+    }
   };
 
   const handleTopicSelect = (topic, topicKey) => {
@@ -201,7 +287,7 @@ function App() {
           </div>
 
           <MapView
-            cities={citiesData}
+            cities={zaydaMode ? zaydaCities : citiesData}
             selectedYear={selectedYear}
             onCityClick={handleCityClick}
             onEventClick={handleEventClick}
@@ -211,6 +297,7 @@ function App() {
             userPins={userPins}
             highlightedCities={highlightedCities}
             activeMigrations={activeMigrations}
+            zaydaMode={zaydaMode}
           />
 
           {/* Bottom Left Control Cluster */}

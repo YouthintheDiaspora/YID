@@ -49,6 +49,12 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
     }
   }, [currentIndex, fullText]);
 
+  const handleSkip = () => {
+    setDisplayedText(fullText);
+    setCurrentIndex(fullText.length);
+    setTypingComplete(true);
+  };
+
   return (
     <div style={{
       position: 'fixed',
@@ -213,7 +219,8 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: isMobile ? '40px 20px' : '60px 40px'
+          padding: isMobile ? '40px 20px' : '60px 40px',
+          position: 'relative'
         }}>
           <div style={{
             width: '95%',
@@ -225,11 +232,38 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
               lineHeight: '1.8',
               color: '#1a1a1a',
               whiteSpace: 'pre-wrap',
-              margin: '0',
+              margin: '0 0 40px 0',
               fontWeight: '400'
             }}>
               {displayedText}
             </pre>
+            <button
+              onClick={handleSkip}
+              style={{
+                padding: isMobile ? '10px 20px' : '12px 28px',
+                background: 'transparent',
+                color: '#0A1F44',
+                border: '2px solid #0A1F44',
+                borderRadius: '6px',
+                fontSize: isMobile ? '14px' : '16px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                fontFamily: "'Montserrat', sans-serif",
+                transition: 'all 0.2s ease',
+                display: 'block',
+                margin: '0 auto'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.background = '#0A1F44';
+                e.target.style.color = '#FFFFFF';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'transparent';
+                e.target.style.color = '#0A1F44';
+              }}
+            >
+              Skip →
+            </button>
           </div>
         </div>
       )}
@@ -952,6 +986,127 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
               >
                 ← Back to Home
               </button>
+            </div>
+
+            {/* About the Artist Section - Moved to Top */}
+            <div style={{
+              marginBottom: isMobile ? '60px' : '80px',
+              paddingBottom: isMobile ? '40px' : '60px',
+              borderBottom: '2px solid #E2E8F0'
+            }}>
+              <h3 style={{
+                margin: '0 0 30px 0',
+                fontSize: isMobile ? '24px' : '32px',
+                fontWeight: '700',
+                fontFamily: "'Playfair Display', serif",
+                color: '#0A1F44',
+                lineHeight: '1.3'
+              }}>
+                About the Artist
+              </h3>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '300px 1fr',
+                gap: isMobile ? '30px' : '50px',
+                alignItems: 'start'
+              }}>
+                {/* Artist Photo */}
+                <div>
+                  <img
+                    src={`${import.meta.env.BASE_URL}historical/Zayda.png`}
+                    alt="Zayda - Solomon S Richmond"
+                    style={{
+                      width: '100%',
+                      height: 'auto',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(10, 31, 68, 0.15)'
+                    }}
+                  />
+                  <div style={{
+                    marginTop: '16px',
+                    textAlign: 'center'
+                  }}>
+                    <div style={{
+                      fontFamily: "'Brush Script MT', 'Lucida Handwriting', cursive",
+                      fontSize: '28px',
+                      color: '#5a6a7a',
+                      marginBottom: '4px'
+                    }}>
+                      Zayda
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#8a99a8',
+                      fontFamily: "'Montserrat', sans-serif"
+                    }}>
+                      Solomon S Richmond
+                    </div>
+                  </div>
+                </div>
+
+                {/* Artist Bio */}
+                <div>
+                  <p style={{
+                    margin: '0 0 20px 0',
+                    fontSize: isMobile ? '15px' : '17px',
+                    lineHeight: '1.8',
+                    color: '#4a5568',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    Solomon was born in Zville (Zviahel), Ukraine in 1906 and passed in Boston, Massachusetts in 2006. Around 1912, he, his older sister Betty, and their mother decided to join their family who had already immigrated to America. He was only 6 years old when he traveled to America.
+                  </p>
+                  <p style={{
+                    margin: '0 0 20px 0',
+                    fontSize: isMobile ? '15px' : '17px',
+                    lineHeight: '1.8',
+                    color: '#4a5568',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    Zayda Solomon told stories about being snuck out of Ukraine in a donkey cart, hidden under blankets with his sister. He recalled his mother saying, "Shush! Shush! Be quiet or we will be found." Zayda, Betty, and their mother passed through Poland and thankfully arrived safely in America. Ever since, generations of his family have grown.
+                  </p>
+                  <p style={{
+                    margin: '0 0 20px 0',
+                    fontSize: isMobile ? '15px' : '17px',
+                    lineHeight: '1.8',
+                    color: '#4a5568',
+                    fontFamily: "'Montserrat', sans-serif"
+                  }}>
+                    Around 1929 he began painting. Through his artwork, Zayda explores different artistic styles, periods, and themes of Jewish identity, diaspora, and cultural heritage.
+                  </p>
+                  <button
+                    onClick={() => {
+                      console.log('Button clicked! Calling onEnterMap');
+                      onEnterMap({
+                        migration: 'zayda-solomon',
+                        showOnlyZayda: true
+                      });
+                    }}
+                    style={{
+                      padding: isMobile ? '12px 24px' : '14px 32px',
+                      background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontSize: isMobile ? '14px' : '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      fontFamily: "'Montserrat', sans-serif",
+                      boxShadow: '0 4px 15px rgba(10, 31, 68, 0.3)',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(10, 31, 68, 0.4)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 15px rgba(10, 31, 68, 0.3)';
+                    }}
+                  >
+                    View Zayda's Migration Journey on Map →
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div style={{
