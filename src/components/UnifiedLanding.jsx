@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import HistoricalImageScroll from './HistoricalImageScroll';
 
-function UnifiedLanding({ onEnterMap }) {
-  const [displayedText, setDisplayedText] = useState('');
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [typingComplete, setTypingComplete] = useState(false);
+function UnifiedLanding({ onEnterMap, skipAnimation = false }) {
+  const fullText = `The persistent conflation of Judaism with the state of Israel has caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
+
+Many Jews have begun to grapple with a fundamental question in one form or another: Must Jewish identity be centered around a political state and political power?
+
+Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival.. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
+
+YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.`;
+
+  const [displayedText, setDisplayedText] = useState(skipAnimation ? fullText : '');
+  const [currentIndex, setCurrentIndex] = useState(skipAnimation ? fullText.length : 0);
+  const [typingComplete, setTypingComplete] = useState(skipAnimation);
   const [activePage, setActivePage] = useState('home'); // 'home', 'why-us', 'contact', 'sources', 'exhibitions', 'exhibit'
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [focusedPainting, setFocusedPainting] = useState(null);
@@ -37,25 +45,17 @@ function UnifiedLanding({ onEnterMap }) {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const fullText = `The persistent conflation of Judaism with the state of Israel has caused division with Jewish communities. While some Jews have grown more unified in their support for Israel, others have agonized over the brutality inflicted upon Palestinians.
-
-Many Jews have begun to grapple with a fundamental question in one form or another: Must Jewish identity be centered around a political state and political power?
-
-Youth in the Diaspora (YID) offers an alternative to the narrative that political empowerment is requisite for Jewish religious and cultural survival.. It presents an interactive and evolving repository of Jewish life in the diaspora throughout millennia of Jewish history and highlights the contributions of Jews to their societies, their communities, and to Judaism itself.
-
-YID aims to connect young Jews who seek to celebrate their identity and history with others who share similar ethical principles.`;
-
   useEffect(() => {
-    if (currentIndex < fullText.length) {
+    if (!skipAnimation && currentIndex < fullText.length) {
       const timeout = setTimeout(() => {
         setDisplayedText(prev => prev + fullText[currentIndex]);
         setCurrentIndex(prev => prev + 1);
       }, 25);
       return () => clearTimeout(timeout);
-    } else {
+    } else if (currentIndex >= fullText.length) {
       setTypingComplete(true);
     }
-  }, [currentIndex, fullText]);
+  }, [currentIndex, fullText, skipAnimation]);
 
   const handleSkip = () => {
     setDisplayedText(fullText);

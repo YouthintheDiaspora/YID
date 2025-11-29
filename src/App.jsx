@@ -30,6 +30,7 @@ function App() {
   const [activeMigrations, setActiveMigrations] = useState([]);
   const [zaydaMode, setZaydaMode] = useState(false);
   const [zaydaCities, setZaydaCities] = useState([]);
+  const [hasVisitedBefore, setHasVisitedBefore] = useState(false);
 
   // Load contributions and pins from localStorage on mount
   useEffect(() => {
@@ -129,6 +130,8 @@ function App() {
   const activeEvents = getEventsForYear(selectedYear);
 
   const handleEnterMap = (options = {}) => {
+    setHasVisitedBefore(true); // Mark that user has entered the map
+
     if (options.showOnlyZayda) {
       // Create Zayda's migration route
       const zaydaMigration = [
@@ -218,7 +221,7 @@ function App() {
 
   return (
     <div className="app">
-      {showLanding && <UnifiedLanding onEnterMap={handleEnterMap} />}
+      {showLanding && <UnifiedLanding onEnterMap={handleEnterMap} skipAnimation={hasVisitedBefore} />}
 
       {!showLanding && (
         <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
