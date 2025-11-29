@@ -79,20 +79,10 @@ function ZoomTracker({ setZoom }) {
   return null;
 }
 
-function MapView({ cities, selectedYear, onCityClick, onEventClick, showMigrations, pinPlacementMode, onPlacePin, userPins, highlightedCities = [], activeMigrations = [], zaydaMode = false }) {
+function MapView({ cities, selectedYear, onCityClick, onEventClick, showMigrations, pinPlacementMode, onPlacePin, userPins, highlightedCities = [], activeMigrations = [] }) {
   const [zoom, setZoom] = useState(2);
   const activeEvents = getEventsForYear(selectedYear);
 
-  console.log('=== MapView Render ===');
-  console.log('zaydaMode:', zaydaMode);
-  console.log('cities:', cities.length, cities);
-  console.log('selectedYear:', selectedYear);
-  console.log('showMigrations:', showMigrations);
-  console.log('activeMigrations:', activeMigrations.length, activeMigrations);
-  console.log('highlightedCities:', highlightedCities);
-  console.log('userPins:', userPins?.length || 0);
-
-  // In Zayda mode, we're already receiving only the 3 cities
   const displayCities = cities;
 
   // Calculate marker size based on population
@@ -137,8 +127,8 @@ function MapView({ cities, selectedYear, onCityClick, onEventClick, showMigratio
         <ZoomTracker setZoom={setZoom} />
         <PinPlacer pinPlacementMode={pinPlacementMode} onPlacePin={onPlacePin} />
 
-        {/* Historical event overlays - hide in Zayda mode */}
-        {!zaydaMode && activeEvents.map((event) =>
+        {/* Historical event overlays */}
+        {activeEvents.map((event) =>
           event.regions.map((region, idx) => (
             <Polygon
               key={`${event.id}-${idx}`}

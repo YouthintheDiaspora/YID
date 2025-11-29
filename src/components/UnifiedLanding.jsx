@@ -1074,13 +1074,7 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
                     Around 1929 he began painting. Through his artwork, Zayda explores different artistic styles, periods, and themes of Jewish identity, diaspora, and cultural heritage.
                   </p>
                   <button
-                    onClick={() => {
-                      console.log('Button clicked! Calling onEnterMap');
-                      onEnterMap({
-                        migration: 'zayda-solomon',
-                        showOnlyZayda: true
-                      });
-                    }}
+                    onClick={() => onEnterMap({ showOnlyZayda: true })}
                     style={{
                       padding: isMobile ? '12px 24px' : '14px 32px',
                       background: 'linear-gradient(135deg, #0A1F44 0%, #1E3A5F 100%)',

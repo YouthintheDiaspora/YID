@@ -128,53 +128,15 @@ function App() {
 
   const activeEvents = getEventsForYear(selectedYear);
 
-  console.log('App render - showLanding:', showLanding, 'zaydaMode:', zaydaMode, 'zaydaCities:', zaydaCities.length);
-
   const handleEnterMap = (options = {}) => {
-    console.log('handleEnterMap called with options:', options);
-
-    // Handle Zayda's migration journey
     if (options.showOnlyZayda) {
-      // Create custom city markers for Zayda's journey
-      const journeyCities = [
-        {
-          id: 'zviahel-ukraine',
-          name: 'Zviahel, Ukraine',
-          coordinates: [50.2547, 27.7528],
-          country: 'Ukraine',
-          populationData: { 1912: 5000 }
-        },
-        {
-          id: 'warsaw-poland',
-          name: 'Warsaw, Poland',
-          coordinates: [52.2297, 21.0122],
-          country: 'Poland',
-          populationData: { 1912: 10000 }
-        },
-        {
-          id: 'malden-massachusetts',
-          name: 'Malden, Massachusetts',
-          coordinates: [42.4252, -71.0720],
-          country: 'United States',
-          populationData: { 1912: 3000 }
-        }
-      ];
-
-      // Create Zayda's migration route with stop in Poland
+      // Create Zayda's migration route
       const zaydaMigration = [
         {
           id: 'zayda-journey-1',
           name: "Zayda Solomon's Journey - Ukraine to Poland",
-          from: {
-            lat: 50.2547,
-            lon: 27.7528,
-            name: 'Zviahel, Ukraine'
-          },
-          to: {
-            lat: 52.2297,
-            lon: 21.0122,
-            name: 'Warsaw, Poland'
-          },
+          from: { lat: 50.2547, lon: 27.7528, name: 'Zviahel, Ukraine' },
+          to: { lat: 52.2297, lon: 21.0122, name: 'Warsaw, Poland' },
           startYear: 1912,
           endYear: 1912,
           volume: 'small',
@@ -183,16 +145,8 @@ function App() {
         {
           id: 'zayda-journey-2',
           name: "Zayda Solomon's Journey - Poland to America",
-          from: {
-            lat: 52.2297,
-            lon: 21.0122,
-            name: 'Warsaw, Poland'
-          },
-          to: {
-            lat: 42.4252,
-            lon: -71.0720,
-            name: 'Malden, Massachusetts'
-          },
+          from: { lat: 52.2297, lon: 21.0122, name: 'Warsaw, Poland' },
+          to: { lat: 42.4252, lon: -71.0720, name: 'Malden, Massachusetts' },
           startYear: 1912,
           endYear: 1912,
           volume: 'small',
@@ -200,16 +154,11 @@ function App() {
         }
       ];
 
-      console.log('Setting Zayda mode with cities:', journeyCities);
-      console.log('Setting migrations:', zaydaMigration);
-
-      // Set all state and immediately hide landing
-      setZaydaCities(journeyCities);
-      setZaydaMode(true);
+      // Use highlighted cities to show only these 3
+      setHighlightedCities(['Zviahel', 'Warsaw', 'Malden']);
+      setActiveMigrations(zaydaMigration);
       setSelectedYear(1912);
       setShowMigrations(true);
-      setActiveMigrations(zaydaMigration);
-      setHighlightedCities([]);
       setShowLanding(false);
     } else {
       setShowLanding(false);
@@ -271,7 +220,7 @@ function App() {
     <div className="app">
       {showLanding && <UnifiedLanding onEnterMap={handleEnterMap} />}
 
-        {!showLanding && (
+      {!showLanding && (
         <div style={{ position: 'relative', height: '100vh', width: '100vw' }}>
           {/* Thematic Selector */}
           <div style={{
@@ -287,7 +236,7 @@ function App() {
           </div>
 
           <MapView
-            cities={zaydaMode ? zaydaCities : citiesData}
+            cities={citiesData}
             selectedYear={selectedYear}
             onCityClick={handleCityClick}
             onEventClick={handleEventClick}
@@ -297,7 +246,6 @@ function App() {
             userPins={userPins}
             highlightedCities={highlightedCities}
             activeMigrations={activeMigrations}
-            zaydaMode={zaydaMode}
           />
 
           {/* Bottom Left Control Cluster */}
