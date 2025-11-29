@@ -139,7 +139,7 @@ function App() {
           to: { lat: 52.2297, lon: 21.0122, name: 'Warsaw, Poland' },
           startYear: 1912,
           endYear: 1912,
-          volume: 'small',
+          volume: 10000,
           description: 'Hidden in a donkey cart under blankets with his sister Betty and mother, escaping Ukraine.'
         },
         {
@@ -149,7 +149,7 @@ function App() {
           to: { lat: 42.4252, lon: -71.0720, name: 'Malden, Massachusetts' },
           startYear: 1912,
           endYear: 1912,
-          volume: 'small',
+          volume: 10000,
           description: 'Journey across the Atlantic to join family in America.'
         }
       ];
