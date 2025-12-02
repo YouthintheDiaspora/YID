@@ -99,7 +99,9 @@ YID aims to connect young Jews who seek to celebrate their identity and history 
       <nav style={{
         position: 'sticky',
         top: 0,
-        background: '#FFFFFF',
+        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url(${import.meta.env.BASE_URL}Hasids.jpg)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'top center',
         borderBottom: '1px solid #E2E8F0',
         zIndex: 100,
         padding: isMobile ? '12px 0' : '20px 0'
